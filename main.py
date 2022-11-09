@@ -70,4 +70,29 @@ class Account:
         info= coursor.fetchone
         print(info)
 
+class Inventory:
+    def Show_laptops_inventory():
+        coursor.execute('SELECT * FROM Inventory WHERE Name = 1')
+        result = coursor.fetchall()
+  
+        for row in result:
+          print(row,"\n")
+        productname=str(input("\nwhich laptop would you like to add to your cart? (Y/N)"))
+
+        coursor.execute('INSERT INTO methodsnew.ShoppingCart (Itemid,Cost,Name) SELECT Itemid,Cost,Stock FROM methodsnew.Inventory WHERE Name= %s',(productname,))
+
+
+    
+    def editstock():
+        product=int(input("\n Which product would you like to edit the stock of?:"))
+        stockamount=int(input("\n How many of these products are in stock?"))
+        coursor.execute('UPDATE Inventory SET Stock = %s WHERE Itemid=%s', (stockamount,product,))
+        db.commit() # # we commit(save) the records to the table
+
+        for row in result:
+          print(row,"\n")
+        productname=str(input("\nwhich laptop would you like to add to your cart? (Y/N)"))
+
+        coursor.execute('INSERT INTO methodsnew.ShoppingCart (Itemid,Cost,Name) SELECT Itemid,Cost,Stock FROM methodsnew.Inventory WHERE Itemid= %s',(productname,))
+
 
