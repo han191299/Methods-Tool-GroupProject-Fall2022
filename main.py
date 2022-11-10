@@ -184,7 +184,7 @@ while(True):
 
         print("1. Shopping Cart\n 2. Account Info\n 3. View Items 4. Logout\n 5. Exit\n")
         
-        choice= int(input("please enter a choice"))
+        choice= int(input("Please enter a choice"))
 
         if choice== 1:
             pass
