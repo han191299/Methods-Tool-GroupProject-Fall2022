@@ -187,7 +187,37 @@ while(True):
         choice= int(input("Please enter a choice"))
 
         if choice== 1:
-            pass
+            print("\nShopping Cart")
+            print("\n1. Add items to cart")
+            print("\n2. View cart")
+            print("\n3. Total price of cart")
+            print("\n4. Remove item from cat")
+            print("\n5. Check out")
+
+            Cart_choice = int(input("\n What would you like to do:"))
+            
+            if (Cart_choice == 1):
+                Inventory.displayBooks()
+                print("put in the item ID of the book you want:")
+                shoppingCart.additems()
+
+            if (Cart_choice == 2):
+                print("Here is the contents of your cart.")
+                shoppingCart.displayCart()
+
+            if (Cart_choice == 3):
+                print("This is the total price of the itmes in your cart.")
+                shoppingCart.totalPrice()
+
+            if (Cart_choice == 4):
+                Inventory.displayBooks()
+                print("put in the item ID of the book you wish to remove:")
+                shoppingCart.deleteItem()
+
+            if (Cart_choice == 5):
+                shoppingCart.checkingOut()
+               
+
         
 
 
