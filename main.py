@@ -212,24 +212,29 @@ while(True):
 
             Cart_choice = int(input("\n What would you like to do:"))
             
+            #if 1 then find books to add to cart
             if (Cart_choice == 1):
                 Inventory.displayBooks()
                 print("put in the item ID of the book you want:")
                 shoppingCart.additems()
-
+            
+            #if 2 then display your cart items
             if (Cart_choice == 2):
                 print("Here is the contents of your cart.")
                 shoppingCart.displayCart()
-
+            
+            #if 3 then display shopping cart price total
             if (Cart_choice == 3):
                 print("This is the total price of the itmes in your cart.")
                 shoppingCart.totalPrice()
-
+            
+            #if 4 then find books to remove from cart
             if (Cart_choice == 4):
                 Inventory.displayBooks()
                 print("put in the item ID of the book you wish to remove:")
                 shoppingCart.deleteItem()
-
+            
+            #if 5 then checkout
             if (Cart_choice == 5):
                 shoppingCart.checkingOut()
                
