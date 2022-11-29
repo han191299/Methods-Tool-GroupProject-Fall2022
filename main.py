@@ -4,243 +4,360 @@ from sqlite3 import Connection, Cursor, connect
 import mysql.connector
 import sys
 
-#Connects python code to mysql database
+
 try:
     db= mysql.connector.connect(
         host= "localhost",
         user= "root",
         password= "",
-        database= "methods group project"
+        database= "methodsgroupproj"
     )
     print("successful conncection!")
 
-    #if fail to connect to database then exits
 except:
     print("failed connection.")
     sys.exit()
 
 print("made it here")
-
 coursor= db.cursor()
 
-#Account class
+
 class Account:
-    #Creates your account with personal info then adds it to the database
-    def CreateAccount(fullname, password, email, payment, address, orderHistory):
+    
+    def CreateAccount(fullname, password, email, payment, address):
         coursor.execute("INSERT INTO account (fullname, password, email, payment, address, orderHistory) VALUES (%s,%s,%s,%s,%s,%s)", (fullname, password, email, payment, address,0))
-        db.commit
-
+        db.commit()
         print(coursor.rowcount, "inserted items")
+        return True
 
-        #Login Function
     def Login(email,password):
-        #searches for account with the email and password
-        coursor.execute('SELECT * FROM account WHERE UserID = %s AND Password = %s', (email, password,))
         
-        currentAcc= coursor.fetchone
+        coursor.execute('SELECT * FROM account WHERE email = %s AND password = %s', (email, password,))
+        
+        currentAcc= coursor.fetchone()
+    
 
         if currentAcc:
-           
+          
             return True
         else:
             return False
         
-    def DeleteAccount(email):
-        #Deletes account with the email inputed
-        coursor.execute('DELETE FROM account WHERE email = %s',(email,))
-        db.commit
-    
-    #Edit your account information
-    def EditAccount(fullname, password, email, payment, address):
-        pass
+    def DeleteAccount():
+        curem=str(input("please enter your email: "))
         
-    #Edits order history    
+        coursor.execute("DELETE FROM shoppingcart")
+        db.commit()
+
+
+        coursor.execute('DELETE FROM account WHERE email = %s',(curem,))
+        
+
+        db.commit()
+
+    def orderHistory():
+        userEmail= str(input("enter email: "))
+        
+        coursor.execute('SELECT orderHistory FROM account WHERE email=%s', (userEmail,))
+        ordernum= coursor.fetchone()
+        print(ordernum)
+        
+        
+
     def EditOrderHistory():
-        #Searches order history on the account by email
-        accountName=str(input("enter the email"))
+        accountName=str(input("enter the email: "))
         coursor.execute('SELECT orderHistory FROM account WHERE email=%s', (accountName,))
         num= coursor.fetchone()
         num +=1
-        #Updates with new changes
         coursor.execute('UPDATE account SET orderHistory = %s WHERE email=%s', (num,accountName,))
-        db.commit  #added??
+        db.commit()  #added??
 
 
     def Logout():
         LogStatus= False
         return LogStatus
 
-    #Changes payment method on the specified email
-    def EditPaymentMethod(email):
-        newPayment= str(input("enter new shipping payment"))
-        coursor.execute('UPDATE account SET payment = %s WHERE email=%s', (newPayment,email))
-        db.commit
+    def EditPaymentMethod(payment):
+        newPayment= str(input("enter new  payment: "))
+        coursor.execute('UPDATE account SET payment = %s WHERE payment=%s', (newPayment,payment))
+        db.commit()
 
-    #Changes shipping address on the specified email
-    def EditShippingAddress(email):
 
-        newAdd= str(input("enter new shipping address"))
-        coursor.execute('UPDATE account SET address = %s WHERE email=%s', (newAdd,email))
-        db.commit
-    
-    #Views account info on account with specified email
+    def EditShippingAddress(address):
+
+        newAdd= str(input("enter new shipping address: "))
+        coursor.execute('UPDATE account SET address = %s WHERE address=%s', (newAdd,address))
+        db.commit()
+
     def ViewAccountInformation():
 
-        userEmail= str(input("enter email"))
+        userEmail= str(input("enter email: "))
         coursor.execute('SELECT * FROM account WHERE email=%s', (userEmail,))
-        info= coursor.fetchone
-        print(info)
+        info= coursor.fetchone()
+        nam,pas,em,pay,add,orderh=info
 
-#Inventory Class
+        print("Name:",nam, "Password:", pas,"Email:",em, "Payment:",pay,"Address:",add,"Order History:",orderh)
+
+
 class Inventory:
 
     def displayBooks():
-        #Finds a book and displays it
         coursor.execute("SELECT * FROM Inventory")
-        table= coursor
-
+        table= coursor.fetchall()
+        print("\nTitle:  ISBN Number: Price:  Stock\n")
         for i in table:
             print(i)
             print("\n")
-            
-            #Asks if you would like to add the book to cart
-            ans= str(input("would you like to add anything to the shopping cart (yes or no"))
 
-            if ans== "yes":
-                itemid= int(input("what is the isbn number?"))
-                coursor.execute('INSERT INTO shopping cart (title,price,quantity,isbn) SELECT title,Price,Stock,isbn FROM Inventory WHERE isbn= %s',(itemid,))
+
+
+        ans= str(input("would you like to add anything to the shopping cart (yes or no): "))
+
+        if ans== "yes":
+
+            title= str(input("what is the title?"))
+            coursor.execute('INSERT INTO methodsgroupproj.shoppingcart (title,isbn,price) SELECT Title,Isbn,Price FROM Inventory WHERE Title= %s',(title,))
+           
+            db.commit()
+        else:
+            print("please try again")
+            loggedin=True
+        
 
 class shoppingCart:
-    #adds specified items to shopping cart
+
     def additems():
-        item= int(input())
-        coursor.execute(('INSERT INTO shopping cart (title,price,quantity,isbn) SELECT title,price,stock,isbn FROM Inventory WHERE isbn= %s',(item,)))
-        db.commit
+        #item= int(input())
+        coursor.execute(('INSERT INTO methodsgroupproj.shoppingcart (title,price,isbn) SELECT Title,Price,Isbn FROM Inventory WHERE isbn= %s',(item,)))
+        db.commit()
 
     def displayCart():
-        #displays specified items form user shopping cart
-        coursor.execute("Select * FROM shopping cart")
-        res= coursor.fetchall
+
+        coursor.execute("Select * FROM shoppingcart")
+        res= coursor.fetchall()
         print("shopping cart ")
         for i in res:
             print(i, "\n")
+       
     
-    #displays the sum of shopping cart prices
-    def totalPrice():
-        res=coursor.execute("SELECT SUM(price) FROM shopping cart")
-        print(res)
-    
-    #deletes specified item from shopping cart
     def deleteItem():
-        item= int(input("whats the item you want to delete (isbn number"))
-        coursor.execute("delete FROM shopping cart WHERE isbn=%s", (item,))
-    
-    #if checking out then it clears the shopping cart
-    def checkingOut():
-        coursor.execute("'delete FROM ShoppingCart'")
+        item= str(input("whats the item you want to delete (title): "))
+        coursor.execute("DELETE FROM shoppingcart WHERE title=%s", (item,))            
+        db.commit()
 
-# beginning of main
+        return True
+    
+    def checkingOut():
+
+        coursor.execute("SELECT * FROM shoppingcart")
+        table=coursor.fetchall()
+        currorder=0
+        useremail= str(input("please enter your email: "))
+        for i in table:
+            
+            title,isbn,price= i
+            coursor.execute("SELECT * FROM Inventory WhERE Title=%s",(title,))
+            currstock=coursor.fetchone()
+            name,isbnnum,price,stock= currstock
+            stock-=1
+            coursor.execute("UPDATE Inventory SET Stock=%s WHERE Title=%s ",(stock,title,))
+            db.commit()
+            coursor.execute("UPDATE account SET orderHistory=%s WHERE email=%s ",(currorder+1,useremail,))
+            db.commit()
+        coursor.execute("DELETE FROM shoppingcart")
+        db.commit()
+
+    def deleteCart():
+         coursor.execute("DELETE FROM shoppingcart")
+         db.commit()
+
+class Review:
+    def viewReviews():
+        coursor.execute("SELECT * FROM Reviews")
+        reviews=coursor.fetchall()
+        print("\n")
+        print("Aurthor, Title, Star Rating, Date:")
+        print("\n")
+        for i in reviews:
+            
+            print(i, "\n")
+
+
+    def addReview():
+        name=str(input("enter your name: "))
+        bookTitle= str(input("enter the title of book: "))
+        stars= int(input("rating? (0-5 star): "))
+        date=str(input("enter the date: "))
+
+        coursor.execute("INSERT INTO methodsgroupproj.Reviews (name,bookTitle,stars,date) VALUES (%s,%s,%s,%s)",(name,bookTitle,stars,date,))
+        db.commit()
+
+    def deleteReview():
+        name=str(input("enter your name: "))
+        coursor.execute("DELETE FROM Reviews WHERE name=%s",(name,))
+        db.commit()
+
+
+
+
+   
+
+# begging main
+
 
 loggedin= False
 
 while(True):
     while(loggedin==False):
-        #Opening menu for bookstore
         print("welcome to the bookstore\n")
-        print("what would you like to do\n")
-        print("1. Login\n 2. Create an Account.\n 3. Exit Program")
+        print("what would you like to do (1,2,3)\n")
+       
 
-        answer= int(input())
-        #if 1 then login to your account
+        answer= int(input("1. Login\n 2. Create an Account.\n 3. Exit Program\n"))
+
         if answer== 1:
-            email= str(input("enter your email"))
-            password= str(input("enter your password"))
+            email= str(input("enter your email: "))
+            password= str(input("enter your password: "))
 
             loggingIn= Account.Login(email,password)
-            #for a login successful login
+            
+
             if loggingIn== True:
                 print("successful login ")
-            #for a failed login
-            elif loggingIn==False:
-                print("not logged in")
-            else:
-                print("line 153")
+                loggedin=True
             
-                exit()
-        #if 2 then create an account
+            else:
+                print("\ndid not log in. please try again.\n")
+            
+                loggedin==False
+
         elif answer== 2:
-            print("creating an account")
+            print("\ncreating an account\n")
+
+            fullname= str(input("please enter your full name: "))
+            password= str(input("please enter your a password: "))
+            email= str(input("please enter your email: "))
+            payment= str(input("please enter your payment info: "))
+            address= str(input("please enter your address: "))
             
-            #input all the required account information 
-            fullname= str(input("please enter your full name"))
-            password= str(input("please enter your a password"))
-            email= str(input("please enter your email"))
-            payment= str(input("please enter your payment info"))
-            address= str(input("please enter your address"))
-            
-            account= Account.CreateAccount(fullname,password,email, payment, address,0)
-            #for successful account creation
+            account= Account.CreateAccount(fullname,password,email, payment, address)
+
             if account== True:
-                print("seccssfully created an account")
-            
-            #for a failed account creation
+                print("\nseccssfully created an account")
+                loggingIn=True
+                loggingIn==True
+                loggedin==True
+                loggedin=True
+
             elif account==False:
-                print("something went wrong")
-            else:
-                print("line 174")
-            
-                exit()
-        #exits if 3 is inputed
+                print("something went wrong")                
+
         elif answer==3:
             print("goodbye!")
             sys.exit(1)
+        
+        else:
+            print("please try again. \n")
+            loggedin=False
+            
 
-    #next menu after successful login
+
     while(loggedin==True):
 
-        print("1. Shopping Cart\n 2. Account Info\n 3. View Items 4. Logout\n 5. Exit\n")
+        print("\n1. View Shopping Cart\n 2. Account Info\n 3. View Items \n4. Reviews\n 5. Exit\n")
         
-        choice= int(input("Please enter a choice"))
-        #if 1 then go to your shopping cart
+        choice= int(input("please enter a choice: "))
+
         if choice== 1:
-            print("\nShopping Cart")
-            print("\n1. Add items to cart")
-            print("\n2. View cart")
-            print("\n3. Total price of cart")
-            print("\n4. Remove item from cat")
-            print("\n5. Check out")
 
-            Cart_choice = int(input("\n What would you like to do:"))
-            
-            #if 1 then find books to add to cart
-            if (Cart_choice == 1):
-                Inventory.displayBooks()
-                print("put in the item ID of the book you want:")
-                shoppingCart.additems()
-            
-            #if 2 then display your cart items
-            if (Cart_choice == 2):
-                print("Here is the contents of your cart.")
-                shoppingCart.displayCart()
-            
-            #if 3 then display shopping cart price total
-            if (Cart_choice == 3):
-                print("This is the total price of the itmes in your cart.")
-                shoppingCart.totalPrice()
-            
-            #if 4 then find books to remove from cart
-            if (Cart_choice == 4):
-                Inventory.displayBooks()
-                print("put in the item ID of the book you wish to remove:")
-                shoppingCart.deleteItem()
-            
-            #if 5 then checkout
-            if (Cart_choice == 5):
-                shoppingCart.checkingOut()
+            shoppingCart.displayCart()
+            ans= str(input("would you like to remove anything from the cart? (yes/no): "))
+            if ans == "yes":
+                re=shoppingCart.deleteItem()
+                if re==True:
+                    print("successfully deleted")
+                else:
+                    print("title not found")
+
+
+            elif ans=="no":
+                 ans2= str(input("do you want to checkout? (yes/no): "))
+                 if ans2=="no":
+                    loggingIn==True
+                 elif ans2=="yes":
+                    shoppingCart.checkingOut()
+                    loggingIn==True
+                 else:
+                     print("please try again. ")
+                     loggingIn=True
+            else:
+                print("\nplease try again.\n")
+                loggedin=True
                
+                
 
+
+                    
+
+        elif choice== 2:
+            print("\n Account Information")
+            print("\n1. Show account Info")
+            print("\n2. Update Shipping Info")
+            print("\n3. Update Payment Info")
+            print("\n4. Delete Account")
+            print("\n5. View order history")
+            print("\n\nEnter Choice:")
+            choice1=int(input())
+
+            if(choice1==1):
+                Account.ViewAccountInformation()
+            elif(choice1==2):
+           
+                
+                addy= str(input("enter your current address: "))
+                Account.EditShippingAddress(addy)
+                
+            elif(choice1==3):
+                currpayment= str(input("enter current payment number: "))
+                Account.EditPaymentMethod(currpayment)
+            elif(choice1==4):
+                Account.DeleteAccount()
+                print("\naccount deleted! \n")
+                
+                loggedin=False
+                
+                
+                
+                
+            elif (choice1==5):                
+                Account.orderHistory()
+            else:
+                 print("please try again. ")
+                 loggedin=True
+            
+        elif choice==3:
+            Inventory.displayBooks()
         
-
+        elif choice==4:
+            reviewChoice= int(input("Welcome to the review page. \n Do  you want to\n 1. View Current Reviews\n 2. Add an Review\n 3. Delete your Review\n 4. Go back to Menu\n"))
+            if reviewChoice==1:
+                Review.viewReviews()
+            elif reviewChoice==2:
+                Review.addReview()
+            elif reviewChoice==3:
+                Review.deleteReview()
+            elif reviewChoice==4:
+                loggedin=True
+            else:
+                print("please try again. ")
+                loggedin=True
+                
+        elif choice==5:
+            sys.exit()
+        else:
+            print("please try again. ")
+            loggedin=True
+            
 
 
 
