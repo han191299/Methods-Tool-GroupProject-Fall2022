@@ -215,7 +215,7 @@ class Review:
 
    
 
-# begging main
+# beginning main
 
 
 loggedin= False
