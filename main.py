@@ -4,7 +4,7 @@ from sqlite3 import Connection, Cursor, connect
 import mysql.connector
 import sys
 
-
+#Connects to mysql if information is correct
 try:
     db= mysql.connector.connect(
         host= "localhost",
@@ -13,7 +13,7 @@ try:
         database= "methodsgroupproj"
     )
     print("successful conncection!")
-
+#if connection fails then exits
 except:
     print("failed connection.")
     sys.exit()
@@ -21,15 +21,17 @@ except:
 print("made it here")
 coursor= db.cursor()
 
-
+#Account class
 class Account:
     
+    #creates an account and adds the account info inputed
     def CreateAccount(fullname, password, email, payment, address):
         coursor.execute("INSERT INTO account (fullname, password, email, payment, address, orderHistory) VALUES (%s,%s,%s,%s,%s,%s)", (fullname, password, email, payment, address,0))
         db.commit()
         print(coursor.rowcount, "inserted items")
         return True
-
+    
+    #login by inputing an accurate email and password
     def Login(email,password):
         
         coursor.execute('SELECT * FROM account WHERE email = %s AND password = %s', (email, password,))
@@ -42,7 +44,8 @@ class Account:
             return True
         else:
             return False
-        
+    
+    #deletes an account with the eamil inputed
     def DeleteAccount():
         curem=str(input("please enter your email: "))
         
@@ -54,7 +57,8 @@ class Account:
         
 
         db.commit()
-
+    
+    #displays order history from the account email inputed
     def orderHistory():
         userEmail= str(input("enter email: "))
         
@@ -63,7 +67,7 @@ class Account:
         print(ordernum)
         
         
-
+    #chooses account from email inputed then allows you to update order history
     def EditOrderHistory():
         accountName=str(input("enter the email: "))
         coursor.execute('SELECT orderHistory FROM account WHERE email=%s', (accountName,))
@@ -76,31 +80,33 @@ class Account:
     def Logout():
         LogStatus= False
         return LogStatus
-
+    
+    #edits payment info from specified account
     def EditPaymentMethod(payment):
         newPayment= str(input("enter new  payment: "))
         coursor.execute('UPDATE account SET payment = %s WHERE payment=%s', (newPayment,payment))
         db.commit()
 
-
+    #edits shipping address from specifed account
     def EditShippingAddress(address):
-
+        
         newAdd= str(input("enter new shipping address: "))
         coursor.execute('UPDATE account SET address = %s WHERE address=%s', (newAdd,address))
         db.commit()
-
+    
+    #displays account info from email inputed
     def ViewAccountInformation():
 
         userEmail= str(input("enter email: "))
         coursor.execute('SELECT * FROM account WHERE email=%s', (userEmail,))
         info= coursor.fetchone()
         nam,pas,em,pay,add,orderh=info
-
+        #displays all the account information
         print("Name:",nam, "Password:", pas,"Email:",em, "Payment:",pay,"Address:",add,"Order History:",orderh)
 
-
+#Inventory class
 class Inventory:
-
+    #displays a book with the price and ISBN num
     def displayBooks():
         coursor.execute("SELECT * FROM Inventory")
         table= coursor.fetchall()
@@ -110,27 +116,30 @@ class Inventory:
             print("\n")
 
 
-
+        #asks if you want to add anything to cart
         ans= str(input("would you like to add anything to the shopping cart (yes or no): "))
-
+        
+        #if yes then adds book to cart with the title inputed
         if ans== "yes":
 
             title= str(input("what is the title?"))
             coursor.execute('INSERT INTO methodsgroupproj.shoppingcart (title,isbn,price) SELECT Title,Isbn,Price FROM Inventory WHERE Title= %s',(title,))
            
             db.commit()
+        #if no or fails goes back to start
         else:
             print("please try again")
             loggedin=True
         
-
+#Shopping Cart class
 class shoppingCart:
-
+    #searches for and adds book to cart that was inputed
     def additems():
         #item= int(input())
         coursor.execute(('INSERT INTO methodsgroupproj.shoppingcart (title,price,isbn) SELECT Title,Price,Isbn FROM Inventory WHERE isbn= %s',(item,)))
         db.commit()
-
+    
+    #displays items in your cart
     def displayCart():
 
         coursor.execute("Select * FROM shoppingcart")
@@ -139,7 +148,7 @@ class shoppingCart:
         for i in res:
             print(i, "\n")
        
-    
+    #deletes book inputed from your cart
     def deleteItem():
         item= str(input("whats the item you want to delete (title): "))
         coursor.execute("DELETE FROM shoppingcart WHERE title=%s", (item,))            
